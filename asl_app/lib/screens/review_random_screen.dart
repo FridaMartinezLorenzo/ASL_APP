@@ -7,44 +7,45 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
-class LearningScreen extends StatefulWidget {
-  const LearningScreen({super.key});
+class ReviewRandomScreen extends StatefulWidget {
+  const ReviewRandomScreen({super.key});
 
   @override
-  State<LearningScreen> createState() => _LearningScreenState();
+  State<ReviewRandomScreen> createState() => _ReviewRandomScreenState();
 }
 
-class _LearningScreenState extends State<LearningScreen> {
-  List<Map<String, dynamic>> lettersStatus = [
-    {'letter': 'A', 'completed': false},
-    {'letter': 'B', 'completed': false},
-    {'letter': 'C', 'completed': false},
-    {'letter': 'D', 'completed': false},
-    {'letter': 'E', 'completed': false},
-    {'letter': 'F', 'completed': false},
-    {'letter': 'G', 'completed': false},
-    {'letter': 'H', 'completed': false},
-    {'letter': 'I', 'completed': false},
-    {'letter': 'J', 'completed': false},
-    {'letter': 'K', 'completed': false},
-    {'letter': 'L', 'completed': false},
-    {'letter': 'M', 'completed': false},
-    {'letter': 'N', 'completed': false},
-    {'letter': 'O', 'completed': false},
-    {'letter': 'P', 'completed': false},
-    {'letter': 'Q', 'completed': false},
-    {'letter': 'R', 'completed': false},
-    {'letter': 'S', 'completed': false},
-    {'letter': 'T', 'completed': false},
-    {'letter': 'U', 'completed': false},
-    {'letter': 'V', 'completed': false},
-    {'letter': 'W', 'completed': false},
-    {'letter': 'X', 'completed': false},
-    {'letter': 'Y', 'completed': false},
-    {'letter': 'Z', 'completed': false},
+class _ReviewRandomScreenState extends State<ReviewRandomScreen> {
+  final List<String> allLetters = [
+    'A',
+    'B',
+    'C',
+    'D',
+    'E',
+    'F',
+    'G',
+    'H',
+    'I',
+    'J',
+    'K',
+    'L',
+    'M',
+    'N',
+    'O',
+    'P',
+    'Q',
+    'R',
+    'S',
+    'T',
+    'U',
+    'V',
+    'W',
+    'X',
+    'Y',
+    'Z',
   ];
 
-  String currentLetter = 'A';
+  List<Map<String, dynamic>> lettersStatus = [];
+  String currentLetter = '';
   bool isCorrect = false;
 
   List<CameraDescription> _cameras = [];
@@ -56,7 +57,20 @@ class _LearningScreenState extends State<LearningScreen> {
   @override
   void initState() {
     super.initState();
+    _initializeLetters();
     _initializeCamera();
+  }
+
+  void _initializeLetters() {
+    final random = allLetters.toList()..shuffle();
+    final selected = random.take(5).toList();
+
+    lettersStatus =
+        selected
+            .map((letter) => {'letter': letter, 'completed': false})
+            .toList();
+
+    currentLetter = lettersStatus.first['letter'];
   }
 
   Future<void> _initializeCamera() async {
@@ -120,17 +134,34 @@ class _LearningScreenState extends State<LearningScreen> {
               }
             });
 
-            // Esperas un pequeño momento antes de cambiar a la siguiente letra
             Future.delayed(const Duration(seconds: 1), () {
-              final next = lettersStatus.firstWhere(
-                (element) => element['completed'] == false,
-                orElse: () => {},
+              final nextIndex = lettersStatus.indexWhere(
+                (e) => !e['completed'],
               );
-              if (next.isNotEmpty) {
+
+              if (nextIndex != -1) {
                 setState(() {
-                  currentLetter = next['letter'];
+                  currentLetter = lettersStatus[nextIndex]['letter'];
                   isCorrect = false;
                 });
+              } else {
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => AlertDialog(
+                        title: const Text('¡Felicidades!'),
+                        content: const Text('Has completado todas las letras.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Aceptar'),
+                          ),
+                        ],
+                      ),
+                );
               }
             });
           }
@@ -229,46 +260,43 @@ class _LearningScreenState extends State<LearningScreen> {
             const SizedBox(height: 30),
 
             // Letras restantes
-            SizedBox(
-              height: 50,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: lettersStatus.length,
-                separatorBuilder:
-                    (_, __) => const SizedBox(width: 10), // 👈 FALTABA ESTO
-                itemBuilder: (context, index) {
-                  final letterData = lettersStatus[index];
-                  final letter = letterData['letter'];
-                  final completed = letterData['completed'] == true;
+            Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                children:
+                    lettersStatus.map((letterData) {
+                      final letter = letterData['letter'];
+                      final completed = letterData['completed'] == true;
 
-                  return ElevatedButton(
-                    onPressed:
-                        completed
-                            ? null
-                            : () {
-                              setState(() {
-                                currentLetter = letter;
-                                isCorrect = false;
-                              });
-                            },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          completed
-                              ? Colors.grey
-                              : (letter == currentLetter
-                                  ? Colors.black
-                                  : Colors.blue),
-                      minimumSize: const Size(50, 50),
-                    ),
-                    child: Text(
-                      letter,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  );
-                },
+                      return ElevatedButton(
+                        onPressed:
+                            completed
+                                ? null
+                                : () {
+                                  setState(() {
+                                    currentLetter = letter;
+                                    isCorrect = false;
+                                  });
+                                },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              completed
+                                  ? Colors.grey
+                                  : (letter == currentLetter
+                                      ? Colors.black
+                                      : Colors.blue),
+                          minimumSize: const Size(50, 50),
+                        ),
+                        child: Text(
+                          letter,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    }).toList(),
               ),
             ),
           ],
