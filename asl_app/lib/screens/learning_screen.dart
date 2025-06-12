@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:asl_app/providers/lsm_provider.dart';
+import 'package:asl_app/themes/app_colors.dart';
+import 'package:asl_app/themes/app_text_styles.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -15,35 +17,11 @@ class LearningScreen extends StatefulWidget {
 }
 
 class _LearningScreenState extends State<LearningScreen> {
-  List<Map<String, dynamic>> lettersStatus = [
-    {'letter': 'A', 'completed': false},
-    {'letter': 'B', 'completed': false},
-    {'letter': 'C', 'completed': false},
-    {'letter': 'D', 'completed': false},
-    {'letter': 'E', 'completed': false},
-    {'letter': 'F', 'completed': false},
-    {'letter': 'G', 'completed': false},
-    {'letter': 'H', 'completed': false},
-    {'letter': 'I', 'completed': false},
-    {'letter': 'J', 'completed': false},
-    {'letter': 'K', 'completed': false},
-    {'letter': 'L', 'completed': false},
-    {'letter': 'M', 'completed': false},
-    {'letter': 'N', 'completed': false},
-    {'letter': 'O', 'completed': false},
-    {'letter': 'P', 'completed': false},
-    {'letter': 'Q', 'completed': false},
-    {'letter': 'R', 'completed': false},
-    {'letter': 'S', 'completed': false},
-    {'letter': 'T', 'completed': false},
-    {'letter': 'U', 'completed': false},
-    {'letter': 'V', 'completed': false},
-    {'letter': 'W', 'completed': false},
-    {'letter': 'X', 'completed': false},
-    {'letter': 'Y', 'completed': false},
-    {'letter': 'Z', 'completed': false},
+  final List<String> remainingLetters = [
+    'A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'J',
+    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+    'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
   ];
-
   String currentLetter = 'A';
   bool isCorrect = false;
 
@@ -61,10 +39,7 @@ class _LearningScreenState extends State<LearningScreen> {
 
   Future<void> _initializeCamera() async {
     _cameras = await availableCameras();
-    if (_cameras.isEmpty) {
-      print('No cameras disponibles');
-      return;
-    }
+    if (_cameras.isEmpty) return;
 
     await _startCamera(_selectedCameraIndex);
     _startDetectionLoop();
@@ -86,7 +61,7 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   void _toggleCamera() async {
-    if (_cameras.length < 2) return; // Solo una cámara disponible
+    if (_cameras.length < 2) return;
 
     _selectedCameraIndex = (_selectedCameraIndex + 1) % _cameras.length;
     await _startCamera(_selectedCameraIndex);
@@ -104,31 +79,17 @@ class _LearningScreenState extends State<LearningScreen> {
           final lsmProvider = context.read<LSMProvider>();
           final detectedLetter = await lsmProvider.detectarLetra(file);
 
-          print('Detectado: $detectedLetter, Esperando: $currentLetter');
-
           if (detectedLetter != null &&
               detectedLetter.toUpperCase() == currentLetter.toUpperCase()) {
             setState(() {
               isCorrect = true;
-              final index = lettersStatus.indexWhere(
-                (element) => element['letter'] == currentLetter,
-              );
-              if (index != -1) {
-                setState(() {
-                  lettersStatus[index]['completed'] = true;
-                });
-              }
+              remainingLetters.remove(currentLetter);
             });
 
-            // Esperas un pequeño momento antes de cambiar a la siguiente letra
             Future.delayed(const Duration(seconds: 1), () {
-              final next = lettersStatus.firstWhere(
-                (element) => element['completed'] == false,
-                orElse: () => {},
-              );
-              if (next.isNotEmpty) {
+              if (remainingLetters.isNotEmpty) {
                 setState(() {
-                  currentLetter = next['letter'];
+                  currentLetter = remainingLetters.first;
                   isCorrect = false;
                 });
               }
@@ -156,12 +117,13 @@ class _LearningScreenState extends State<LearningScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ASL'),
+        title: Text('Aprende LSM', style: AppTextStyles.heading),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        backgroundColor: AppColors.primary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -171,42 +133,51 @@ class _LearningScreenState extends State<LearningScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  "LETRA: $currentLetter",
-                  style: const TextStyle(fontSize: 16),
-                ),
+                Text("Letra:", style: AppTextStyles.heading),
+                const SizedBox(width: 8),
+                Text(currentLetter,
+                    style: AppTextStyles.heading.copyWith(
+                      fontSize: 36,
+                      color: AppColors.accent,
+                    )),
                 const SizedBox(width: 16),
                 Image.asset(
                   'assets/images/$currentLetter.png',
-                  width: 200,
-                  height: 200,
-                  errorBuilder:
-                      (_, __, ___) => const Icon(Icons.image_not_supported),
+                  width: 100,
+                  height: 100,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.image_not_supported),
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // Vista previa cámara
+            // Vista previa de la cámara
             Stack(
               children: [
                 Container(
                   height: 300,
                   width: double.infinity,
-                  color: Colors.grey[300],
-                  child:
-                      _cameraController != null &&
-                              _cameraController!.value.isInitialized
-                          ? CameraPreview(_cameraController!)
-                          : const Center(child: CircularProgressIndicator()),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.black12,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _cameraController != null &&
+                            _cameraController!.value.isInitialized
+                        ? CameraPreview(_cameraController!)
+                        : const Center(child: CircularProgressIndicator()),
+                  ),
                 ),
                 Positioned(
                   right: 10,
                   top: 10,
                   child: FloatingActionButton(
                     mini: true,
+                    backgroundColor: AppColors.accent,
                     onPressed: _toggleCamera,
-                    child: const Icon(Icons.cameraswitch),
+                    child: const Icon(Icons.cameraswitch, color: Colors.white),
                   ),
                 ),
               ],
@@ -214,58 +185,52 @@ class _LearningScreenState extends State<LearningScreen> {
 
             const SizedBox(height: 16),
 
-            // Estado
+            // Estado de retroalimentación
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("CORRECTO: "),
+                Text("Correcto:", style: AppTextStyles.body),
+                const SizedBox(width: 8),
                 Icon(
-                  isCorrect ? Icons.check_box : Icons.close,
+                  isCorrect ? Icons.check_circle : Icons.cancel,
                   color: isCorrect ? Colors.green : Colors.red,
+                  size: 28,
                 ),
               ],
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
 
             // Letras restantes
             SizedBox(
               height: 50,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: lettersStatus.length,
-                separatorBuilder:
-                    (_, __) => const SizedBox(width: 10), // 👈 FALTABA ESTO
+                itemCount: remainingLetters.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
-                  final letterData = lettersStatus[index];
-                  final letter = letterData['letter'];
-                  final completed = letterData['completed'] == true;
+                  final letter = remainingLetters[index];
+                  final isSelected = letter == currentLetter;
 
                   return ElevatedButton(
-                    onPressed:
-                        completed
-                            ? null
-                            : () {
-                              setState(() {
-                                currentLetter = letter;
-                                isCorrect = false;
-                              });
-                            },
+                    onPressed: () {
+                      setState(() {
+                        currentLetter = letter;
+                        isCorrect = false;
+                      });
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          completed
-                              ? Colors.grey
-                              : (letter == currentLetter
-                                  ? Colors.black
-                                  : Colors.blue),
+                      backgroundColor: isSelected
+                          ? AppColors.primary
+                          : AppColors.secondary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       minimumSize: const Size(50, 50),
                     ),
                     child: Text(
                       letter,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTextStyles.body.copyWith(color: Colors.white),
                     ),
                   );
                 },

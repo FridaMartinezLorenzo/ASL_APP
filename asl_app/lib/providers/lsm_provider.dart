@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import '../data/models/sign_model.dart';
+import '../models/sign_model.dart';
 
 class LSMProvider with ChangeNotifier {
  String getBaseUrl() {
