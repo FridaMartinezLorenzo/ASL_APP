@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:asl_app/providers/lsm_provider.dart';
+import 'package:asl_app/themes/app_colors.dart';
+import 'package:asl_app/themes/app_text_styles.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -16,31 +18,9 @@ class LearningScreen extends StatefulWidget {
 
 class _LearningScreenState extends State<LearningScreen> {
   final List<String> remainingLetters = [
-    'A',
-    'B',
-    'C',
-    'D',
-    'E',
-    'F',
-    'H',
-    'I',
-    'J',
-    'K',
-    'L',
-    'M',
-    'N',
-    'O',
-    'P',
-    'Q',
-    'R',
-    'S',
-    'T',
-    'U',
-    'V',
-    'W',
-    'X',
-    'Y',
-    'Z',
+    'A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'J',
+    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+    'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
   ];
   String currentLetter = 'A';
   bool isCorrect = false;
@@ -59,10 +39,7 @@ class _LearningScreenState extends State<LearningScreen> {
 
   Future<void> _initializeCamera() async {
     _cameras = await availableCameras();
-    if (_cameras.isEmpty) {
-      print('No cameras disponibles');
-      return;
-    }
+    if (_cameras.isEmpty) return;
 
     await _startCamera(_selectedCameraIndex);
     _startDetectionLoop();
@@ -84,7 +61,7 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   void _toggleCamera() async {
-    if (_cameras.length < 2) return; // Solo una cámara disponible
+    if (_cameras.length < 2) return;
 
     _selectedCameraIndex = (_selectedCameraIndex + 1) % _cameras.length;
     await _startCamera(_selectedCameraIndex);
@@ -102,8 +79,6 @@ class _LearningScreenState extends State<LearningScreen> {
           final lsmProvider = context.read<LSMProvider>();
           final detectedLetter = await lsmProvider.detectarLetra(file);
 
-          print('Detectado: $detectedLetter, Esperando: $currentLetter');
-
           if (detectedLetter != null &&
               detectedLetter.toUpperCase() == currentLetter.toUpperCase()) {
             setState(() {
@@ -111,7 +86,6 @@ class _LearningScreenState extends State<LearningScreen> {
               remainingLetters.remove(currentLetter);
             });
 
-            // Esperas un pequeño momento antes de cambiar a la siguiente letra
             Future.delayed(const Duration(seconds: 1), () {
               if (remainingLetters.isNotEmpty) {
                 setState(() {
@@ -143,12 +117,13 @@ class _LearningScreenState extends State<LearningScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ASL'),
+        title: Text('Aprende LSM', style: AppTextStyles.heading),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        backgroundColor: AppColors.primary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -158,42 +133,51 @@ class _LearningScreenState extends State<LearningScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  "LETRA: $currentLetter",
-                  style: const TextStyle(fontSize: 16),
-                ),
+                Text("Letra:", style: AppTextStyles.heading),
+                const SizedBox(width: 8),
+                Text(currentLetter,
+                    style: AppTextStyles.heading.copyWith(
+                      fontSize: 36,
+                      color: AppColors.accent,
+                    )),
                 const SizedBox(width: 16),
                 Image.asset(
                   'assets/images/$currentLetter.png',
-                  width: 200,
-                  height: 200,
-                  errorBuilder:
-                      (_, __, ___) => const Icon(Icons.image_not_supported),
+                  width: 100,
+                  height: 100,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.image_not_supported),
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // Vista previa cámara
+            // Vista previa de la cámara
             Stack(
               children: [
                 Container(
                   height: 300,
                   width: double.infinity,
-                  color: Colors.grey[300],
-                  child:
-                      _cameraController != null &&
-                              _cameraController!.value.isInitialized
-                          ? CameraPreview(_cameraController!)
-                          : const Center(child: CircularProgressIndicator()),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.black12,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _cameraController != null &&
+                            _cameraController!.value.isInitialized
+                        ? CameraPreview(_cameraController!)
+                        : const Center(child: CircularProgressIndicator()),
+                  ),
                 ),
                 Positioned(
                   right: 10,
                   top: 10,
                   child: FloatingActionButton(
                     mini: true,
+                    backgroundColor: AppColors.accent,
                     onPressed: _toggleCamera,
-                    child: const Icon(Icons.cameraswitch),
+                    child: const Icon(Icons.cameraswitch, color: Colors.white),
                   ),
                 ),
               ],
@@ -201,19 +185,21 @@ class _LearningScreenState extends State<LearningScreen> {
 
             const SizedBox(height: 16),
 
-            // Estado
+            // Estado de retroalimentación
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("CORRECTO: "),
+                Text("Correcto:", style: AppTextStyles.body),
+                const SizedBox(width: 8),
                 Icon(
-                  isCorrect ? Icons.check_box : Icons.close,
+                  isCorrect ? Icons.check_circle : Icons.cancel,
                   color: isCorrect ? Colors.green : Colors.red,
+                  size: 28,
                 ),
               ],
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
 
             // Letras restantes
             SizedBox(
@@ -224,6 +210,8 @@ class _LearningScreenState extends State<LearningScreen> {
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
                   final letter = remainingLetters[index];
+                  final isSelected = letter == currentLetter;
+
                   return ElevatedButton(
                     onPressed: () {
                       setState(() {
@@ -232,16 +220,17 @@ class _LearningScreenState extends State<LearningScreen> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          letter == currentLetter ? Colors.black : Colors.blue,
+                      backgroundColor: isSelected
+                          ? AppColors.primary
+                          : AppColors.secondary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       minimumSize: const Size(50, 50),
                     ),
                     child: Text(
                       letter,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTextStyles.body.copyWith(color: Colors.white),
                     ),
                   );
                 },
