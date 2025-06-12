@@ -61,6 +61,7 @@ class _InformativeScreenState extends State<InformativeScreen> with SingleTicker
             title: gesture.name,
             description: gesture.description,
             imagePath: gesture.imagePath,
+            videoPath: gesture.videoPath, // nuevo
           );
         },
       ),
