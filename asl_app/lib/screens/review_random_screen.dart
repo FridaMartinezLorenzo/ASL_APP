@@ -207,13 +207,13 @@ class _ReviewRandomScreenState extends State<ReviewRandomScreen> {
                   style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(width: 16),
-                Image.asset(
-                  'assets/images/$currentLetter.png',
-                  width: 200,
-                  height: 200,
-                  errorBuilder:
-                      (_, __, ___) => const Icon(Icons.image_not_supported),
-                ),
+                //Image.asset(
+                //  'assets/images/$currentLetter.png',
+                //  width: 200,
+                //  height: 200,
+                //  errorBuilder:
+                //      (_, __, ___) => const Icon(Icons.image_not_supported),
+                //),
               ],
             ),
             const SizedBox(height: 16),
