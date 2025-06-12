@@ -38,6 +38,7 @@ dependencies:
   path_provider: ^2.0.15
   http: ^1.4.0
   provider: ^6.1.5
+  video_player: ^2.10.0
 
 dev_dependencies:
   flutter_test:
@@ -63,32 +64,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-      - assets/images/A.png
-      - assets/images/B.png
-      - assets/images/C.png
-      - assets/images/D.png
-      - assets/images/E.png
-      - assets/images/F.png
-      - assets/images/G.png
-      - assets/images/H.png
-      - assets/images/I.png
-      - assets/images/J.png
-      - assets/images/K.png
-      - assets/images/L.png
-      - assets/images/M.png
-      - assets/images/N.png
-      - assets/images/O.png
-      - assets/images/P.png
-      - assets/images/Q.png
-      - assets/images/R.png
-      - assets/images/S.png
-      - assets/images/T.png
-      - assets/images/U.png
-      - assets/images/V.png
-      - assets/images/W.png
-      - assets/images/X.png
-      - assets/images/Y.png
-      - assets/images/Z.png
+    - assets/images/
+    - assets/videos/
+
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
