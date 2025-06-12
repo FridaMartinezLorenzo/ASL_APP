@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# Archivos generados por Flutter (Linux, macOS, Windows)
+/linux/flutter/generated_*
+/macos/Flutter/GeneratedPluginRegistrant.swift
+/windows/flutter/generated_*
