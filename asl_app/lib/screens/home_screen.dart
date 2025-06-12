@@ -38,23 +38,13 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => ReviewRandomScreen()),
                 );
               },
-              child: const Text('Repaso 1'),
+              child: const Text('Repaso'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(150, 50),
                 textStyle: const TextStyle(fontSize: 18),
               ),
             ),
-            const SizedBox(height: 20), // Espacio entre botones
-            ElevatedButton(
-              onPressed: () {
-                // Navegar a pantalla de repaso
-              },
-              child: const Text('Repaso 2'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(150, 50),
-                textStyle: const TextStyle(fontSize: 18),
-              ),
-            ),
+            
           ],
         ),
       ),
