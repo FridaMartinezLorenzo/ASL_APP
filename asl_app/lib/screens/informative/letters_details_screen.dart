@@ -28,7 +28,8 @@ class _DetailScreenState extends State<DetailScreen> {
         ..initialize().then((_) {
           setState(() {});
           _videoController?.setLooping(true);
-          _videoController?.play();
+          // Elimina esta línea para evitar que el video se reproduzca automáticamente
+          // _videoController?.play();
         });
     }
   }
@@ -81,7 +82,11 @@ class _DetailScreenState extends State<DetailScreen> {
           children: [
             VideoPlayer(_videoController!),
             if (!_videoController!.value.isPlaying)
-              const Icon(Icons.play_circle_outline, size: 64, color: Colors.white70),
+              const Icon(
+                Icons.play_circle_outline,
+                size: 64,
+                color: Colors.white70,
+              ),
           ],
         ),
       ),
@@ -93,7 +98,10 @@ class _DetailScreenState extends State<DetailScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
-        title: Text(widget.info.letter, style: AppTextStyles.heading.copyWith(color: Colors.white)),
+        title: Text(
+          widget.info.letter,
+          style: AppTextStyles.heading.copyWith(color: Colors.white),
+        ),
       ),
       backgroundColor: AppColors.background,
       body: Padding(
