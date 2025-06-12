@@ -18,9 +18,31 @@ class LearningScreen extends StatefulWidget {
 
 class _LearningScreenState extends State<LearningScreen> {
   final List<String> remainingLetters = [
-    'A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'J',
-    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-    'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    'A',
+    'B',
+    'C',
+    'D',
+    'E',
+    'F',
+    'H',
+    'I',
+    'J',
+    'K',
+    'L',
+    'M',
+    'N',
+    'O',
+    'P',
+    'Q',
+    'R',
+    'S',
+    'T',
+    'U',
+    'V',
+    'W',
+    'X',
+    'Y',
+    'Z',
   ];
   String currentLetter = 'A';
   bool isCorrect = false;
@@ -39,7 +61,16 @@ class _LearningScreenState extends State<LearningScreen> {
 
   Future<void> _initializeCamera() async {
     _cameras = await availableCameras();
+
     if (_cameras.isEmpty) return;
+
+    // Buscar la cámara frontal
+    final frontCameraIndex = _cameras.indexWhere(
+      (camera) => camera.lensDirection == CameraLensDirection.front,
+    );
+
+    // Si hay cámara frontal, usarla como predeterminada
+    _selectedCameraIndex = frontCameraIndex != -1 ? frontCameraIndex : 0;
 
     await _startCamera(_selectedCameraIndex);
     _startDetectionLoop();
@@ -117,7 +148,11 @@ class _LearningScreenState extends State<LearningScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Aprende LSM', style: AppTextStyles.heading),
+        title: Text(
+          'Learning ASL',
+          style: AppTextStyles.heading.copyWith(color: Colors.white),
+        ),
+
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -126,31 +161,37 @@ class _LearningScreenState extends State<LearningScreen> {
         backgroundColor: AppColors.primary,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(25.0),
         child: Column(
           children: [
+            Text(""),
+            const SizedBox(width: 70),
+
             // Letra actual
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              
               children: [
-                Text("Letra:", style: AppTextStyles.heading),
+                Text("Letter:", style: AppTextStyles.heading),
                 const SizedBox(width: 8),
-                Text(currentLetter,
-                    style: AppTextStyles.heading.copyWith(
-                      fontSize: 36,
-                      color: AppColors.accent,
-                    )),
+                Text(
+                  currentLetter,
+                  style: AppTextStyles.heading.copyWith(
+                    fontSize: 36,
+                    color: AppColors.accent,
+                  ),
+                ),
                 const SizedBox(width: 16),
                 Image.asset(
                   'assets/images/$currentLetter.png',
                   width: 100,
                   height: 100,
-                  errorBuilder: (_, __, ___) =>
-                      const Icon(Icons.image_not_supported),
+                  errorBuilder:
+                      (_, __, ___) => const Icon(Icons.image_not_supported),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 25),
 
             // Vista previa de la cámara
             Stack(
@@ -164,10 +205,11 @@ class _LearningScreenState extends State<LearningScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: _cameraController != null &&
-                            _cameraController!.value.isInitialized
-                        ? CameraPreview(_cameraController!)
-                        : const Center(child: CircularProgressIndicator()),
+                    child:
+                        _cameraController != null &&
+                                _cameraController!.value.isInitialized
+                            ? CameraPreview(_cameraController!)
+                            : const Center(child: CircularProgressIndicator()),
                   ),
                 ),
                 Positioned(
@@ -183,13 +225,13 @@ class _LearningScreenState extends State<LearningScreen> {
               ],
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 35),
 
             // Estado de retroalimentación
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Correcto:", style: AppTextStyles.body),
+                Text("It's Correct? :", style: AppTextStyles.body),
                 const SizedBox(width: 8),
                 Icon(
                   isCorrect ? Icons.check_circle : Icons.cancel,
@@ -199,7 +241,7 @@ class _LearningScreenState extends State<LearningScreen> {
               ],
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 45),
 
             // Letras restantes
             SizedBox(
@@ -220,9 +262,8 @@ class _LearningScreenState extends State<LearningScreen> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isSelected
-                          ? AppColors.primary
-                          : AppColors.secondary,
+                      backgroundColor:
+                          isSelected ? AppColors.primary : AppColors.secondary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:asl_app/providers/lsm_provider.dart';
+import 'package:asl_app/themes/app_colors.dart';
+import 'package:asl_app/themes/app_text_styles.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -75,10 +77,16 @@ class _ReviewRandomScreenState extends State<ReviewRandomScreen> {
 
   Future<void> _initializeCamera() async {
     _cameras = await availableCameras();
-    if (_cameras.isEmpty) {
-      print('No cameras disponibles');
-      return;
-    }
+
+    if (_cameras.isEmpty) return;
+
+    // Buscar la cámara frontal
+    final frontCameraIndex = _cameras.indexWhere(
+      (camera) => camera.lensDirection == CameraLensDirection.front,
+    );
+
+    // Si hay cámara frontal, usarla como predeterminada
+    _selectedCameraIndex = frontCameraIndex != -1 ? frontCameraIndex : 0;
 
     await _startCamera(_selectedCameraIndex);
     _startDetectionLoop();
@@ -194,112 +202,128 @@ class _ReviewRandomScreenState extends State<ReviewRandomScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Letra actual
-            Row(
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 32.0,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  "LETRA: $currentLetter",
-                  style: const TextStyle(fontSize: 16),
+                // Letra actual
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Letter:", style: AppTextStyles.heading),
+                    const SizedBox(width: 8),
+                    Text(
+                      currentLetter,
+                      style: AppTextStyles.heading.copyWith(
+                        fontSize: 36,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                //Image.asset(
-                //  'assets/images/$currentLetter.png',
-                //  width: 200,
-                //  height: 200,
-                //  errorBuilder:
-                //      (_, __, ___) => const Icon(Icons.image_not_supported),
-                //),
-              ],
-            ),
-            const SizedBox(height: 16),
+                const SizedBox(height: 25),
 
-            // Vista previa cámara
-            Stack(
-              children: [
-                Container(
-                  height: 300,
-                  width: double.infinity,
-                  color: Colors.grey[300],
-                  child:
-                      _cameraController != null &&
-                              _cameraController!.value.isInitialized
-                          ? CameraPreview(_cameraController!)
-                          : const Center(child: CircularProgressIndicator()),
+                // Vista previa cámara
+                Stack(
+                  children: [
+                    Container(
+                      height: 300,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.black12,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child:
+                            _cameraController != null &&
+                                    _cameraController!.value.isInitialized
+                                ? CameraPreview(_cameraController!)
+                                : const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                      ),
+                    ),
+                    Positioned(
+                      right: 10,
+                      top: 10,
+                      child: FloatingActionButton(
+                        mini: true,
+                        backgroundColor: AppColors.accent,
+                        onPressed: _toggleCamera,
+                        child: const Icon(
+                          Icons.cameraswitch,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                Positioned(
-                  right: 10,
-                  top: 10,
-                  child: FloatingActionButton(
-                    mini: true,
-                    onPressed: _toggleCamera,
-                    child: const Icon(Icons.cameraswitch),
-                  ),
+
+                const SizedBox(height: 35),
+
+                // Estado
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("It's Correct?  "),
+                    Icon(
+                      isCorrect ? Icons.check_box : Icons.close,
+                      color: isCorrect ? Colors.green : Colors.red,
+                    ),
+                  ],
                 ),
-              ],
-            ),
 
-            const SizedBox(height: 16),
+                const SizedBox(height: 45),
 
-            // Estado
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("CORRECTO: "),
-                Icon(
-                  isCorrect ? Icons.check_box : Icons.close,
-                  color: isCorrect ? Colors.green : Colors.red,
-                ),
-              ],
-            ),
+                // Letras restantes
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  children:
+                      lettersStatus.map((letterData) {
+                        final letter = letterData['letter'];
+                        final completed = letterData['completed'] == true;
 
-            const SizedBox(height: 30),
-
-            // Letras restantes
-            Center(
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 12,
-                children:
-                    lettersStatus.map((letterData) {
-                      final letter = letterData['letter'];
-                      final completed = letterData['completed'] == true;
-
-                      return ElevatedButton(
-                        onPressed:
-                            completed
-                                ? null
-                                : () {
-                                  setState(() {
-                                    currentLetter = letter;
-                                    isCorrect = false;
-                                  });
-                                },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
+                        return ElevatedButton(
+                          onPressed:
                               completed
-                                  ? Colors.grey
-                                  : (letter == currentLetter
-                                      ? Colors.black
-                                      : Colors.blue),
-                          minimumSize: const Size(50, 50),
-                        ),
-                        child: Text(
-                          letter,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                                  ? null
+                                  : () {
+                                    setState(() {
+                                      currentLetter = letter;
+                                      isCorrect = false;
+                                    });
+                                  },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                completed
+                                    ? Colors.grey
+                                    : (letter == currentLetter
+                                        ? Colors.black
+                                        : Colors.blue),
+                            minimumSize: const Size(50, 50),
                           ),
-                        ),
-                      );
-                    }).toList(),
-              ),
+                          child: Text(
+                            letter,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

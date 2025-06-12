@@ -1,3 +1,4 @@
+import 'package:asl_app/screens/review_random_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:asl_app/screens/learning_screen.dart';
 import 'package:asl_app/screens/informative/informative_screen.dart';
@@ -12,7 +13,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Lenguaje de Señas (ASL)'),
+        title: const Text('Hands Speak (ASL)'),
         centerTitle: true,
       ),
       body: Padding(
@@ -21,20 +22,20 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Bienvenido',
+              'Welcome!',
               style: AppTextStyles.heading,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Elige una opción para comenzar:',
+              'Choose an option...',
               style: AppTextStyles.body,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
             _buildMenuButton(
               context,
-              label: 'Aprender',
+              label: 'Learn',
               icon: Icons.school,
               onPressed: () {
                 Navigator.push(
@@ -46,16 +47,19 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 20),
             _buildMenuButton(
               context,
-              label: 'Repasar',
+              label: 'Review',
               icon: Icons.refresh,
               onPressed: () {
-                // TODO: implementar navegación a pantalla de repaso
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ReviewRandomScreen()),
+                );
               },
             ),
             const SizedBox(height: 20),
             _buildMenuButton(
               context,
-              label: 'Información',
+              label: 'Information',
               icon: Icons.info_outline,
               onPressed: () {
                 Navigator.push(

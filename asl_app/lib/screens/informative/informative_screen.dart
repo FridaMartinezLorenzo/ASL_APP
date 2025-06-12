@@ -74,8 +74,9 @@ class _InformativeScreenState extends State<InformativeScreen> with SingleTicker
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.primary,
-        title: const Text('Lengua de Señas Americana'),
+        title: const Text('American Sign Language'),
         titleTextStyle: AppTextStyles.heading.copyWith(color: Colors.white),
+        centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.accent,
@@ -83,8 +84,8 @@ class _InformativeScreenState extends State<InformativeScreen> with SingleTicker
           unselectedLabelColor: Colors.white70,
           labelStyle: AppTextStyles.subheading.copyWith(fontWeight: FontWeight.bold),
           tabs: const [
-            Tab(text: 'Abecedario ASL'),
-            Tab(text: 'Gestos Especiales'),
+            Tab(text: 'Alphabet ASL'),
+            Tab(text: 'Special Gestures'),
           ],
         ),
       ),
