@@ -15,13 +15,40 @@ class LearningScreen extends StatefulWidget {
 }
 
 class _LearningScreenState extends State<LearningScreen> {
-  final List<String> remainingLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+  final List<String> remainingLetters = [
+    'A',
+    'B',
+    'C',
+    'D',
+    'E',
+    'F',
+    'H',
+    'I',
+    'J',
+    'K',
+    'L',
+    'M',
+    'N',
+    'O',
+    'P',
+    'Q',
+    'R',
+    'S',
+    'T',
+    'U',
+    'V',
+    'W',
+    'X',
+    'Y',
+    'Z',
+  ];
   String currentLetter = 'A';
   bool isCorrect = false;
 
+  List<CameraDescription> _cameras = [];
+  int _selectedCameraIndex = 0;
   CameraController? _cameraController;
   Timer? _timer;
-
   bool _isDetecting = false;
 
   @override
@@ -31,57 +58,71 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   Future<void> _initializeCamera() async {
-    final cameras = await availableCameras();
-    if (cameras.isEmpty) {
-      debugPrint('No cameras disponibles');
+    _cameras = await availableCameras();
+    if (_cameras.isEmpty) {
+      print('No cameras disponibles');
       return;
     }
 
+    await _startCamera(_selectedCameraIndex);
+    _startDetectionLoop();
+  }
+
+  Future<void> _startCamera(int index) async {
+    final selectedCamera = _cameras[index];
+
+    _cameraController?.dispose();
     _cameraController = CameraController(
-      cameras.first,
+      selectedCamera,
       ResolutionPreset.medium,
       enableAudio: false,
     );
 
     await _cameraController!.initialize();
-
     if (!mounted) return;
     setState(() {});
+  }
 
-    _startDetectionLoop();
+  void _toggleCamera() async {
+    if (_cameras.length < 2) return; // Solo una cámara disponible
+
+    _selectedCameraIndex = (_selectedCameraIndex + 1) % _cameras.length;
+    await _startCamera(_selectedCameraIndex);
   }
 
   void _startDetectionLoop() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-      if (_cameraController == null || !_cameraController!.value.isInitialized) return;
-
+      if (_cameraController == null || !_cameraController!.value.isInitialized)
+        return;
       if (!_isDetecting && !isCorrect) {
         _isDetecting = true;
         try {
-          // Tomar foto
           final image = await _cameraController!.takePicture();
-
-          // Obtener archivo de imagen
           final file = File(image.path);
-
-          // Enviar imagen al provider para detectar letra
           final lsmProvider = context.read<LSMProvider>();
           final detectedLetter = await lsmProvider.detectarLetra(file);
 
-          debugPrint('Detectado: $detectedLetter, Esperando: $currentLetter');
+          print('Detectado: $detectedLetter, Esperando: $currentLetter');
 
-          if (detectedLetter != null && detectedLetter.toUpperCase() == currentLetter.toUpperCase()) {
+          if (detectedLetter != null &&
+              detectedLetter.toUpperCase() == currentLetter.toUpperCase()) {
             setState(() {
               isCorrect = true;
               remainingLetters.remove(currentLetter);
+            });
+
+            // Esperas un pequeño momento antes de cambiar a la siguiente letra
+            Future.delayed(const Duration(seconds: 1), () {
               if (remainingLetters.isNotEmpty) {
-                currentLetter = remainingLetters.first;
-                isCorrect = false;
+                setState(() {
+                  currentLetter = remainingLetters.first;
+                  isCorrect = false;
+                });
               }
             });
           }
         } catch (e) {
-          debugPrint('Error en captura/detección: $e');
+          print('Error en captura/detección: $e');
         } finally {
           _isDetecting = false;
         }
@@ -113,36 +154,54 @@ class _LearningScreenState extends State<LearningScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Letra y ejemplo
+            // Letra actual
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("LETRA: $currentLetter", style: const TextStyle(fontSize: 16)),
+                Text(
+                  "LETRA: $currentLetter",
+                  style: const TextStyle(fontSize: 16),
+                ),
                 const SizedBox(width: 16),
                 Image.asset(
                   'assets/images/$currentLetter.png',
                   width: 200,
                   height: 200,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
+                  errorBuilder:
+                      (_, __, ___) => const Icon(Icons.image_not_supported),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Vista previa cámara
+            Stack(
+              children: [
+                Container(
+                  height: 300,
+                  width: double.infinity,
+                  color: Colors.grey[300],
+                  child:
+                      _cameraController != null &&
+                              _cameraController!.value.isInitialized
+                          ? CameraPreview(_cameraController!)
+                          : const Center(child: CircularProgressIndicator()),
+                ),
+                Positioned(
+                  right: 10,
+                  top: 10,
+                  child: FloatingActionButton(
+                    mini: true,
+                    onPressed: _toggleCamera,
+                    child: const Icon(Icons.cameraswitch),
+                  ),
                 ),
               ],
             ),
 
             const SizedBox(height: 16),
 
-            // Vista previa cámara o indicador de carga
-            Container(
-              height: 300,
-              width: double.infinity,
-              color: Colors.grey[300],
-              child: _cameraController != null && _cameraController!.value.isInitialized
-                  ? CameraPreview(_cameraController!)
-                  : const Center(child: CircularProgressIndicator()),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Estado (correcto o incorrecto)
+            // Estado
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -150,7 +209,7 @@ class _LearningScreenState extends State<LearningScreen> {
                 Icon(
                   isCorrect ? Icons.check_box : Icons.close,
                   color: isCorrect ? Colors.green : Colors.red,
-                )
+                ),
               ],
             ),
 
@@ -177,11 +236,13 @@ class _LearningScreenState extends State<LearningScreen> {
                           letter == currentLetter ? Colors.black : Colors.blue,
                       minimumSize: const Size(50, 50),
                     ),
-                    child: Text(letter,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        )),
+                    child: Text(
+                      letter,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   );
                 },
               ),

@@ -41,13 +41,14 @@ class LSMProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final jsonData = json.decode(responseBody);
         lastResponse = SignResponse.fromJson(jsonData);
+        print(lastResponse);
         return lastResponse?.letraDetectada;
       } else {
-        debugPrint('Error en respuesta: ${response.statusCode}');
+        print('Error en respuesta: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      debugPrint('Error al enviar imagen: $e');
+      print('Error al enviar imagen: $e');
       return null;
     } finally {
       isLoading = false;
