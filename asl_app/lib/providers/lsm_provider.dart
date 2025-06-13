@@ -15,7 +15,7 @@ class LSMProvider with ChangeNotifier {
       // return 'http://10.0.2.2:8080'; 
 
       // Para dispositivo Android físico en red local:
-      return 'http://172.20.10.2:8080';
+      return 'http://18.117.3.175:8080';
     } else if (Platform.isIOS) {
       return 'http://localhost:8080'; // Emulador iOS
     } else {

@@ -17,33 +17,13 @@ class LearningScreen extends StatefulWidget {
 }
 
 class _LearningScreenState extends State<LearningScreen> {
-  final List<String> remainingLetters = [
-    'A',
-    'B',
-    'C',
-    'D',
-    'E',
-    'F',
-    'H',
-    'I',
-    'J',
-    'K',
-    'L',
-    'M',
-    'N',
-    'O',
-    'P',
-    'Q',
-    'R',
-    'S',
-    'T',
-    'U',
-    'V',
-    'W',
-    'X',
-    'Y',
-    'Z',
+  final List<String> allLetters = [
+    'A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'J',
+    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+    'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
   ];
+
+  Set<String> completedLetters = {};
   String currentLetter = 'A';
   bool isCorrect = false;
 
@@ -64,12 +44,10 @@ class _LearningScreenState extends State<LearningScreen> {
 
     if (_cameras.isEmpty) return;
 
-    // Buscar la cámara frontal
     final frontCameraIndex = _cameras.indexWhere(
       (camera) => camera.lensDirection == CameraLensDirection.front,
     );
 
-    // Si hay cámara frontal, usarla como predeterminada
     _selectedCameraIndex = frontCameraIndex != -1 ? frontCameraIndex : 0;
 
     await _startCamera(_selectedCameraIndex);
@@ -100,8 +78,7 @@ class _LearningScreenState extends State<LearningScreen> {
 
   void _startDetectionLoop() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-      if (_cameraController == null || !_cameraController!.value.isInitialized)
-        return;
+      if (_cameraController == null || !_cameraController!.value.isInitialized) return;
       if (!_isDetecting && !isCorrect) {
         _isDetecting = true;
         try {
@@ -114,13 +91,14 @@ class _LearningScreenState extends State<LearningScreen> {
               detectedLetter.toUpperCase() == currentLetter.toUpperCase()) {
             setState(() {
               isCorrect = true;
-              remainingLetters.remove(currentLetter);
+              completedLetters.add(currentLetter);
             });
 
             Future.delayed(const Duration(seconds: 1), () {
-              if (remainingLetters.isNotEmpty) {
+              final remaining = allLetters.where((l) => !completedLetters.contains(l)).toList();
+              if (remaining.isNotEmpty) {
                 setState(() {
-                  currentLetter = remainingLetters.first;
+                  currentLetter = remaining.first;
                   isCorrect = false;
                 });
               }
@@ -144,15 +122,12 @@ class _LearningScreenState extends State<LearningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final lsmProvider = context.watch<LSMProvider>();
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'Learning ASL',
           style: AppTextStyles.heading.copyWith(color: Colors.white),
         ),
-
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -164,13 +139,9 @@ class _LearningScreenState extends State<LearningScreen> {
         padding: const EdgeInsets.all(25.0),
         child: Column(
           children: [
-            Text(""),
-            const SizedBox(width: 70),
-
-            // Letra actual
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              
               children: [
                 Text("Letter:", style: AppTextStyles.heading),
                 const SizedBox(width: 8),
@@ -186,14 +157,11 @@ class _LearningScreenState extends State<LearningScreen> {
                   'assets/images/$currentLetter.png',
                   width: 100,
                   height: 100,
-                  errorBuilder:
-                      (_, __, ___) => const Icon(Icons.image_not_supported),
+                  errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
                 ),
               ],
             ),
             const SizedBox(height: 25),
-
-            // Vista previa de la cámara
             Stack(
               children: [
                 Container(
@@ -205,11 +173,10 @@ class _LearningScreenState extends State<LearningScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child:
-                        _cameraController != null &&
-                                _cameraController!.value.isInitialized
-                            ? CameraPreview(_cameraController!)
-                            : const Center(child: CircularProgressIndicator()),
+                    child: _cameraController != null &&
+                            _cameraController!.value.isInitialized
+                        ? CameraPreview(_cameraController!)
+                        : const Center(child: CircularProgressIndicator()),
                   ),
                 ),
                 Positioned(
@@ -224,10 +191,7 @@ class _LearningScreenState extends State<LearningScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 35),
-
-            // Estado de retroalimentación
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -240,30 +204,33 @@ class _LearningScreenState extends State<LearningScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 45),
-
-            // Letras restantes
             SizedBox(
               height: 50,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: remainingLetters.length,
+                itemCount: allLetters.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
-                  final letter = remainingLetters[index];
+                  final letter = allLetters[index];
                   final isSelected = letter == currentLetter;
+                  final isCompleted = completedLetters.contains(letter);
 
                   return ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        currentLetter = letter;
-                        isCorrect = false;
-                      });
-                    },
+                    onPressed: isCompleted
+                        ? null
+                        : () {
+                            setState(() {
+                              currentLetter = letter;
+                              isCorrect = false;
+                            });
+                          },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          isSelected ? AppColors.primary : AppColors.secondary,
+                      backgroundColor: isCompleted
+                          ? Colors.grey
+                          : isSelected
+                              ? AppColors.primary
+                              : AppColors.secondary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -271,7 +238,9 @@ class _LearningScreenState extends State<LearningScreen> {
                     ),
                     child: Text(
                       letter,
-                      style: AppTextStyles.body.copyWith(color: Colors.white),
+                      style: AppTextStyles.body.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                   );
                 },
