@@ -34,8 +34,8 @@
 
 
 ### Integrantes:
-ELorza Velásquez Jorge Aurelio
-Frida Ximena Martínez Lorenzo
+- Elorza Velásquez Jorge Aurelio
+- Frida Ximena Martínez Lorenzo
 
 
 
