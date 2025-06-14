@@ -32,6 +32,15 @@
 - **FastAPI** – API que procesa imágenes y devuelve la letra detectada.
 - **Provider** – Para el manejo eficiente del estado en Flutter.
 
+### Home Screen
+![Modo Aprendizaje](assetsREADME/images/HomeScreen.jpeg)
+
+### Modo de Aprendizaje
+![Modo Revisión](assetsREADME/images/LearnScreen.jpeg)
+
+### Información de Letras y Gestos
+![Detalle Letra](assetsREADME/images/InformationScreen.jpeg)
+
 
 ### Integrantes:
 - Elorza Velásquez Jorge Aurelio
