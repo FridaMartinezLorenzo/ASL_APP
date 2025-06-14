@@ -33,13 +33,13 @@
 - **Provider** – Para el manejo eficiente del estado en Flutter.
 
 <h3>Home Screen</h3>
-<img src="assetsREADME/images/HomeScreen.jpeg" alt="Modo Aprendizaje" height="200"/>
+<img src="assetsREADME/images/HomeScreen.jpeg" alt="Modo Aprendizaje" height="500"/>
 
 <h3>Modo de Aprendizaje</h3>
-<img src="assetsREADME/images/LearnScreen.jpeg" alt="Modo Revisión" height="200"/>
+<img src="assetsREADME/images/LearnScreen.jpeg" alt="Modo Revisión" height="500"/>
 
 <h3>Información de Letras y Gestos</h3>
-<img src="assetsREADME/images/InformationScreen.jpeg" alt="Detalle Letra" height="200"/>
+<img src="assetsREADME/images/InformationScreen.jpeg" alt="Detalle Letra" height="500"/>
 
 ### Integrantes:
 - Elorza Velásquez Jorge Aurelio
